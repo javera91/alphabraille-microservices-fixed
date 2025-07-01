@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres-participants:
+    image: postgres:15
+    container_name: postgres-participants
+    environment:
+      POSTGRES_DB: participantsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init-db/participants:/docker-entrypoint-initdb.d
+    networks:
+      - alphabraille-net
+
+  postgres-usability:
+    image: postgres:15
+    container_name: postgres-usability
+    environment:
+      POSTGRES_DB: usabilitydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./init-db/usability:/docker-entrypoint-initdb.d
+    networks:
+      - alphabraille-net
+
+  eureka:
+    build: ./eureka
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    networks:
+      - alphabraille-net
+
+  participants:
+    build: ./participants
+    container_name: participants
+    depends_on:
+      - postgres-participants
+      - eureka
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-participants:5432/participantsdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: your_password
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    networks:
+      - alphabraille-net
+
+  usability:
+    build: ./usability
+    container_name: usability
+    depends_on:
+      - postgres-usability
+      - eureka
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-usability:5432/usabilitydb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: your_password
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    networks:
+      - alphabraille-net
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    depends_on:
+      - participants
+      - usability
+      - eureka
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    networks:
+      - alphabraille-net
+
+networks:
+  alphabraille-net:
+    driver: bridge

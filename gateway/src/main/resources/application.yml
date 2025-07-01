@@ -1,0 +1,20 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: participants
+          uri: lb://participants
+          predicates:
+            - Path=/api/participants/**
+        - id: usability
+          uri: lb://usability
+          predicates:
+            - Path=/api/usability/**
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

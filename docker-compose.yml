@@ -50,6 +50,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: your_password
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EXTERNAL_USABILITY_API_BASEURL: http://gateway:8080
     networks:
       - alphabraille-net
 

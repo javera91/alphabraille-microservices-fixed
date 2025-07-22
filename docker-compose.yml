@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres-participants:
     image: postgres:15
